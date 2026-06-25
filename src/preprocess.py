@@ -3,7 +3,7 @@ from sklearn.preprocessing import TargetEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import argparse
-from utils import load_train_data
+from mlops_model_prototype.repo.src.utils import load_train_data
 import os
 import joblib
 
