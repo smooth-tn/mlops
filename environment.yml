@@ -1,0 +1,4 @@
+$schema: https://azuremlschemas.azureml.net/latest/environment.schema.json
+name: fraud-detection-env
+image: mcr.microsoft.com/azureml/base:latest
+conda_file: conda.yml

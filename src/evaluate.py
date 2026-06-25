@@ -96,10 +96,18 @@ if __name__=="__main__":
                 "scaler":  f"{args.processed_data}/scaler.pkl"
             }
         )
-        mlflow.register_model(
+        result_champ=mlflow.register_model(
             model_uri=f"runs:/{evaluate_run_id}/{champion_artifact}",
             name="fraud-detection-champion"
         )
+        version_champ=result_champ.version
+        client.set_registered_model_alias(
+            name="fraud-detection-champion",
+            alias="Production",
+            version=version_champ
+        )
+
+
         if challenger_name:
             challenger_metrics, challenger_model, challenger_run_id, challenger_artifact = candidates[challenger_name[0]]
             mlflow.log_param("challenger", challenger_name[0])
@@ -113,10 +121,15 @@ if __name__=="__main__":
                     "scaler":  f"{args.processed_data}/scaler.pkl"
                 }
             )
-            mlflow.register_model(
+            result_challenger=mlflow.register_model(
                 model_uri=f"runs:/{evaluate_run_id}/{challenger_artifact}",
                 name="fraud-detection-challenger"
             )
-
+            version_chall=result_challenger.version
+            client.set_registered_model_alias(
+                name="fraud-detection-challenger",
+                alias="Staging",
+                version=version_chall
+            )            
 
         

@@ -1,0 +1,40 @@
+$schema: https://azuremlschemas.azureml.net/latest/pipelineJob.schema.json
+type: pipeline
+
+experiment_name: fraud_detection
+compute: azureml:mouhibcompute
+
+inputs:
+  raw_data:
+    type: uri_file
+    path: azureml:fraudDetection@1
+
+jobs:
+  step_one:
+    type: command
+    code: ./src
+    command: python preprocess.py
+    environment: azureml:fraud-detection-env@latest
+    inputs: 
+      data: ${{parent.inputs.raw_data}}
+    outputs:
+      processed_data:
+        type: uri_folder
+  step_two:
+    depends_on: 
+      - step_one
+    type: command
+    code: ./src
+    command: python train.py
+    environment: azureml:fraud-detection-env@latest
+    inputs:
+      data: ${{parent.jobs.step_one.outputs.processed_data}}
+  step_three:
+    depends_on: 
+      - step_two
+    type: command
+    code: ./src
+    command: python evaluate.py
+    environment: azureml:fraud-detection-env@latest
+    inputs:
+      data: ${{parent.jobs.step_one.outputs.processed_data}}

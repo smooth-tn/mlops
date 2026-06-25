@@ -4,7 +4,7 @@ import mlflow
 import joblib
 import pandas as pd
 import logging
-from mlops_model_prototype.repo.src.preprocess import preprocess
+from preprocess import preprocess
 
 logger = logging.getLogger(__name__)
 feature_columns=['step', 'type', 'amount', 'oldbalanceOrg', 'newbalanceOrig','oldbalanceDest', 'newbalanceDest']
