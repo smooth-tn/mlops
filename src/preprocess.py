@@ -25,6 +25,7 @@ def feature_engineering(x_train:pd.DataFrame,y_train:pd.Series):
     df['type_encoded']=encoder.fit_transform(df[['type']],y_train)
     df_engineered=df.drop(columns=COLS_TO_DROP)
     df_engineered,scaler=_scale_data(df_engineered)
+    df_engineered = pd.DataFrame(df_engineered, columns=df_engineered.columns)
     return df_engineered,encoder,scaler
 
 
@@ -40,7 +41,7 @@ def preprocess(df:pd.DataFrame,encoder : TargetEncoder,scaler:StandardScaler)->p
     df_preprocessed=scaler.transform(df_preprocessed)
     return df_preprocessed
 
-def _scale_data(df:pd.DataFrame)->StandardScaler:
+def _scale_data(df:pd.DataFrame)->tuple:
     scaler=StandardScaler()
     scaled_df=scaler.fit_transform(df)
     return scaled_df,scaler
@@ -80,7 +81,7 @@ def split_data(df:pd.DataFrame,train_size=0.6,cv_size=0.5,random_state=42):
 
     df=df.copy()
     target=df.isFraud
-    df.drop(columns=('isFraud'),inplace=True)
+    df.drop(columns=['isFraud'],inplace=True)
     x_train,x_temp,y_train,y_temp=train_test_split(df,target,train_size=train_size,random_state=random_state)
     x_cv,x_test,y_cv,y_test=train_test_split(x_temp,y_temp,train_size=cv_size,random_state=random_state)
     
@@ -99,8 +100,9 @@ if __name__=="__main__":
     df=load_train_data(args.raw_data)
     x_train,y_train,x_cv,y_cv,x_test,y_test=split_data(df)
     x_train, encoder,scaler = feature_engineering(x_train, y_train)
-    x_cv =pd.DataFrame(preprocess(x_cv, encoder,scaler))
-    x_test =pd.DataFrame(preprocess(x_test, encoder,scaler))
+    x_cv=pd.DataFrame(preprocess(x_cv, encoder,scaler))
+    x_test=pd.DataFrame(preprocess(x_test, encoder,scaler))
+    
 
     os.makedirs(args.processed_data, exist_ok=True)
     x_train.to_csv(f"{args.processed_data}/x_train.csv", index=False)
@@ -111,3 +113,4 @@ if __name__=="__main__":
     y_test.to_frame().to_csv(f"{args.processed_data}/y_test.csv",   index=False)
     joblib.dump(encoder, f"{args.processed_data}/encoder.pkl")
     joblib.dump(scaler, f"{args.processed_data}/scaler.pkl")
+    

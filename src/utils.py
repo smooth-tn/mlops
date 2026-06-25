@@ -1,5 +1,6 @@
 from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential
+
 import pandas as pd
 import logging
 
@@ -37,5 +38,6 @@ def load_train_data(path:str)->pd.DataFrame:
     df=pd.read_csv(path)
     df.drop(columns=['isFlaggedFraud','nameOrig','nameDest'],inplace=True)
     return df
+
 
 

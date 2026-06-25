@@ -1,9 +1,7 @@
 import mlflow
 import argparse
-import joblib
 import pandas as pd
 from sklearn.metrics import classification_report, roc_auc_score, fbeta_score
-from sklearn.pipeline import Pipeline
 from mlflow.tracking import MlflowClient
 
 
@@ -35,7 +33,7 @@ def evaluate_model(model, x_test, y_test,threshold=0.5):
         'recall':         report['1']['recall'],
         'f1':             report['1']['f1-score'],
         'roc_auc_score':  roc,
-        'f2_score':       f2
+        'fbeta_score':       f2
     }
 
 def passes_threshold(metrics: dict, min_recall=0.8, min_precision=0.25)->bool:
@@ -54,8 +52,7 @@ if __name__=="__main__":
     args= _parse_args()
     x_test=pd.read_csv(f"{args.processed_data}/x_test.csv")
     y_test=pd.read_csv(f"{args.processed_data}/y_test.csv").squeeze()
-    encoder=joblib.load(f"{args.processed_data}/encoder.pkl")
-    scaler=joblib.load(f"{args.processed_data}/scaler.pkl")
+
 
     child_runs=get_latest_train_run(client, EXPERIMENT_NAME)
     xgb_run_id=child_runs['xgboost'].info.run_id
@@ -75,42 +72,51 @@ if __name__=="__main__":
 
     candidates={}
     if passed_xgb:
-        candidates['xgboost']=(metrics_xgb, model_xgb, xgb_run_id, "champion_pipeline")
+        candidates['xgboost']=(metrics_xgb, model_xgb, xgb_run_id, "model_xgboost")
     if passed_forest:
-        candidates['randomForest']=(metrics_forest, model_forest, rf_run_id, "challenger_pipeline")
+        candidates['randomForest']=(metrics_forest, model_forest, rf_run_id, "model_randomForest")
 
-    champion_name=max(candidates, key=lambda k: candidates[k][0]['f2_score'])
+    champion_name=max(candidates, key=lambda k: candidates[k][0]['recall'])
     champion_metrics, champion_model, champion_run_id, champion_artifact = candidates[champion_name]
-    champion_pipeline=Pipeline([
-        ('encoder', encoder),
-        ('scaler', scaler),
-        ('champion', champion_model)])
+
 
     challenger_name=[k for k in candidates if k != champion_name]
     
-    with mlflow.start_run(run_name='evaluate') as evaluate_run :
-        evaluate_run_id = evaluate_run.info.run_id
+    with mlflow.start_run(run_name='evaluate') as evaluate_run:
+        evaluate_run_id=evaluate_run.info.run_id
 
-        mlflow.log_metrics({f"test_champion_{k}": v for k, v in champion_metrics.items()})
+        mlflow.log_metrics({f"champion_metrics_{k}": v for k, v in champion_metrics.items()})
         mlflow.log_param("champion", champion_name)
-        mlflow.sklearn.log_model(champion_pipeline, artifact_path="champion_pipeline")
+
+        mlflow.sklearn.log_model(
+            champion_model,
+            artifact_path=champion_artifact,
+            artifacts={
+                "encoder": f"{args.processed_data}/encoder.pkl",
+                "scaler":  f"{args.processed_data}/scaler.pkl"
+            }
+        )
         mlflow.register_model(
             model_uri=f"runs:/{evaluate_run_id}/{champion_artifact}",
             name="fraud-detection-champion"
         )
         if challenger_name:
-            challenger_metrics, challenger_model, challenger_run_id, challenger_artifact= candidates[challenger_name[0]]
-            challenger_pipeline=Pipeline([
-                ('encoder', encoder),
-                ('scaler', scaler),
-                ('challenger_model', challenger_model)])
+            challenger_metrics, challenger_model, challenger_run_id, challenger_artifact = candidates[challenger_name[0]]
             mlflow.log_param("challenger", challenger_name[0])
-            mlflow.log_metrics({f"challenger_{k}": v for k, v in challenger_metrics.items()})
-            mlflow.sklearn.log_model(challenger_pipeline, artifact_path="challenger_pipeline")
+            mlflow.log_metrics({f"challenger_metrics_{k}": v for k, v in challenger_metrics.items()})
+
+            mlflow.sklearn.log_model(
+                challenger_model,
+                artifact_path=challenger_artifact,
+                artifacts={
+                    "encoder": f"{args.processed_data}/encoder.pkl",
+                    "scaler":  f"{args.processed_data}/scaler.pkl"
+                }
+            )
             mlflow.register_model(
                 model_uri=f"runs:/{evaluate_run_id}/{challenger_artifact}",
                 name="fraud-detection-challenger"
             )
 
 
-    
+        

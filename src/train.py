@@ -1,6 +1,7 @@
 import mlflow
 import argparse
 import pandas as pd
+import os
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import roc_auc_score,classification_report,fbeta_score
@@ -31,7 +32,7 @@ def train_forest(x_train,y_train)->RandomForestClassifier:
         model_forest=a RandomForestClassifier model
     """
 
-    model_forest=model_forest = RandomForestClassifier(
+    model_forest= RandomForestClassifier(
     n_estimators=50,
     class_weight={0:1,1:10},
     random_state=42,
@@ -73,19 +74,32 @@ if __name__=="__main__":
             mlflow.log_metrics({
                 'precision':report_xgb['1']['precision'],
                 'recall':report_xgb['1']['recall'],
-                'f-1':report_xgb['1']['f1-score'],
+                'f1':report_xgb['1']['f1-score'],
                 'roc_auc_score':roc_xgb,
                 'fbeta_score':fbeta_score_xgb
             })
-            mlflow.sklearn.log_model(model_xgb,'model_xgb')
-
+            mlflow.sklearn.log_model(
+                model_xgb,
+                artifact_path='model_xgb',
+                artifacts={
+                    "encoder": os.path.join(args.processed_data, "encoder.pkl"),
+                    "scaler":  os.path.join(args.processed_data, "scaler.pkl")
+                }
+            )
         with mlflow.start_run(run_name='randomForest',nested=True):
             mlflow.log_metrics({
                 'precision':report_forest['1']['precision'],
                 'recall':report_forest['1']['recall'],
-                'f-1':report_forest['1']['f1-score'],
+                'f1':report_forest['1']['f1-score'],
                 'roc_auc_score':roc_forest,
                 'fbeta_score':fbeta_score_forest
             })
 
-            mlflow.sklearn.log_model(model_forest,'model_forest')  
+            mlflow.sklearn.log_model(
+                model_forest,
+                artifact_path='model_forest',
+                artifacts={
+                    "encoder": os.path.join(args.processed_data, "encoder.pkl"),
+                    "scaler":  os.path.join(args.processed_data, "scaler.pkl")
+                }
+            )
