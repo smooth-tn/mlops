@@ -2,13 +2,14 @@ $schema: https://azuremlschemas.azureml.net/latest/pipelineJob.schema.json
 type: pipeline
 
 experiment_name: fraud_detection
+display_name: Fraud Detection Pipeline
 compute: azureml:mouhibcompute
 
 
 inputs:
   raw_data:
     type: uri_file
-    path: azureml://subscriptions/3c3b6d94-78ba-4830-b73c-a8e2b2835dae/resourcegroups/mlopsmouhib/workspaces/amlmouhib/datastores/workspaceblobstore/paths/UI/2026-06-15_120339_UTC/AIML Dataset v1.csv
+    path: azureml://subscriptions/3c3b6d94-78ba-4830-b73c-a8e2b2835dae/resourcegroups/mlopsmouhib/workspaces/amlmouhib/datastores/workspaceblobstore/paths/UI/2026-06-26_154732_UTC/AIML_Dataset_v1.csv
 
 jobs:
   step_one:

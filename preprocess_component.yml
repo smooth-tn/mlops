@@ -3,7 +3,7 @@ type: command
 
 name: preprocess_data
 display_name: Preprocess Data
-version: 2
+version: 8
 
 code: ./src
 command: python preprocess.py --raw_data ${{inputs.raw_data}} --processed_data ${{outputs.processed_data}}

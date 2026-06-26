@@ -1,7 +1,6 @@
 import mlflow
 import argparse
 import pandas as pd
-import os
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import roc_auc_score,classification_report,fbeta_score
@@ -49,7 +48,7 @@ def _parse_args():
 
 if __name__=="__main__":
 
-    mlflow.set_experiment("fraud-detection v1")
+    mlflow.set_experiment("fraud_detection")
     args =_parse_args()
     X_train = pd.read_csv(f"{args.processed_data}/x_train.csv")
     y_train = pd.read_csv(f"{args.processed_data}/y_train.csv").squeeze()
@@ -69,37 +68,35 @@ if __name__=="__main__":
     roc_forest=roc_auc_score(y_cv,proba)
     fbeta_score_forest=fbeta_score(y_cv, prediction, beta=2)
 
-    with mlflow.start_run(run_name='train'):
-        with mlflow.start_run(run_name='xgboost',nested=True):
-            mlflow.log_metrics({
-                'precision':report_xgb['1']['precision'],
-                'recall':report_xgb['1']['recall'],
-                'f1':report_xgb['1']['f1-score'],
-                'roc_auc_score':roc_xgb,
-                'fbeta_score':fbeta_score_xgb
-            })
-            mlflow.sklearn.log_model(
-                model_xgb,
-                artifact_path='model_xgb',
-                artifacts={
-                    "encoder": os.path.join(args.processed_data, "encoder.pkl"),
-                    "scaler":  os.path.join(args.processed_data, "scaler.pkl")
-                }
-            )
-        with mlflow.start_run(run_name='randomForest',nested=True):
-            mlflow.log_metrics({
-                'precision':report_forest['1']['precision'],
-                'recall':report_forest['1']['recall'],
-                'f1':report_forest['1']['f1-score'],
-                'roc_auc_score':roc_forest,
-                'fbeta_score':fbeta_score_forest
-            })
+    
+    with mlflow.start_run(run_name='xgboost',nested=True) as xgb_run:
+        mlflow.log_metrics({
+            'precision':report_xgb['1']['precision'],
+            'recall':report_xgb['1']['recall'],
+            'f1':report_xgb['1']['f1-score'],
+            'roc_auc_score':roc_xgb,
+            'fbeta_score':fbeta_score_xgb
+        })
+        mlflow.sklearn.log_model(
+            model_xgb,
+            artifact_path='model_xgb')
+        
+        mlflow.register_model(
+            model_uri=f"runs:/{xgb_run.info.run_id}/model_xgb",
+            name="fraud-detection-xgboost"
+        )
 
-            mlflow.sklearn.log_model(
-                model_forest,
-                artifact_path='model_forest',
-                artifacts={
-                    "encoder": os.path.join(args.processed_data, "encoder.pkl"),
-                    "scaler":  os.path.join(args.processed_data, "scaler.pkl")
-                }
-            )
+    with mlflow.start_run(run_name='randomForest',nested=True) as rf_run:
+        mlflow.log_metrics({
+            'precision':report_forest['1']['precision'],
+            'recall':report_forest['1']['recall'],
+            'f1':report_forest['1']['f1-score'],
+            'roc_auc_score':roc_forest,
+            'fbeta_score':fbeta_score_forest
+        })
+
+        mlflow.sklearn.log_model(model_forest,artifact_path='model_forest')
+        mlflow.register_model(
+            model_uri=f"runs:/{rf_run.info.run_id}/model_forest",
+            name="fraud-detection-randomForest"
+        )

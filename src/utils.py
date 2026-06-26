@@ -22,17 +22,7 @@ def az_connect(config)->MLClient:
         raise
 
     return ml_client
-def load_train_data(path:str)->pd.DataFrame:
-    """function to load trainning (tain,test)data from a csv in a azure boble storage
-        df.columns=['step', 'type', 'amount', 'nameOrig', 'oldbalanceOrg', 'newbalanceOrig',
-       'nameDest', 'oldbalanceDest', 'newbalanceDest', 'isFraud',
-       'isFlaggedFraud']
-       [isFlaggedFraud,nameOrig,nameDest] will be dropped in the load data function cuz it will be absent at infrence time
-    """
 
-    df=pd.read_csv(path)
-    df.drop(columns=['isFlaggedFraud','nameOrig','nameDest'],inplace=True)
-    return df
 
 
 

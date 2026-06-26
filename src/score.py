@@ -29,9 +29,10 @@ def init():
     threshold = 0.1 if model_name == "fraud-detection-challenger" else 0.5
 
     model_dir=os.getenv("AZUREML_MODEL_DIR")
-    encoder=joblib.load(os.path.join(model_dir, "encoder.pkl"))
-    scaler=joblib.load(os.path.join(model_dir, "scaler.pkl"))
-    model=mlflow.sklearn.load_model(os.path.join(model_dir))
+    encoder = joblib.load(os.path.join(model_dir, "artifacts", "encoder.pkl"))
+    scaler  = joblib.load(os.path.join(model_dir, "artifacts", "scaler.pkl"))
+    artifact_name = "model_xgboost" if model_name == "fraud-detection-champion" else "model_randomForest"
+    model = mlflow.sklearn.load_model(os.path.join(model_dir, artifact_name))
 
 def run(raw_data):
     try:

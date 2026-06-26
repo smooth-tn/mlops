@@ -3,12 +3,11 @@ from sklearn.preprocessing import TargetEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import argparse
-from utils import load_train_data
 import os
 import joblib
 
 COLS_TO_DROP = ['oldbalanceOrg', 'newbalanceOrig', 'oldbalanceDest', 'newbalanceDest', 'type']
-
+feature_columns_postProcess=['step','amount','transferred_amount_orig','transferred_amount_dest','type_encoded']
 def feature_engineering(x_train:pd.DataFrame,y_train:pd.Series):
     """
     x_train.columns=['step', 'type', 'amount', 'oldbalanceOrg', 'newbalanceOrig',
@@ -25,7 +24,7 @@ def feature_engineering(x_train:pd.DataFrame,y_train:pd.Series):
     df['type_encoded']=encoder.fit_transform(df[['type']],y_train)
     df_engineered=df.drop(columns=COLS_TO_DROP)
     df_engineered,scaler=_scale_data(df_engineered)
-    df_engineered = pd.DataFrame(df_engineered, columns=df_engineered.columns)
+    df_engineered = pd.DataFrame(df_engineered, columns=feature_columns_postProcess)
     return df_engineered,encoder,scaler
 
 
@@ -93,15 +92,26 @@ def _parse_args():
     parser.add_argument("--processed_data", type=str)
     return parser.parse_args()
 
+def _load_train_data(path:str)->pd.DataFrame:
+    """function to load trainning (tain,test)data from a csv in a azure boble storage
+        df.columns=['step', 'type', 'amount', 'nameOrig', 'oldbalanceOrg', 'newbalanceOrig',
+       'nameDest', 'oldbalanceDest', 'newbalanceDest', 'isFraud',
+       'isFlaggedFraud']
+       [isFlaggedFraud,nameOrig,nameDest] will be dropped in the load data function cuz it will be absent at infrence time
+    """
+
+    df=pd.read_csv(path)
+    df.drop(columns=['isFlaggedFraud','nameOrig','nameDest'],inplace=True)
+    return df
 
 if __name__=="__main__":
     args=_parse_args()
 
-    df=load_train_data(args.raw_data)
+    df=_load_train_data(args.raw_data)
     x_train,y_train,x_cv,y_cv,x_test,y_test=split_data(df)
     x_train, encoder,scaler = feature_engineering(x_train, y_train)
-    x_cv=pd.DataFrame(preprocess(x_cv, encoder,scaler))
-    x_test=pd.DataFrame(preprocess(x_test, encoder,scaler))
+    x_cv=pd.DataFrame(preprocess(x_cv, encoder,scaler),columns=feature_columns_postProcess)
+    x_test=pd.DataFrame(preprocess(x_test, encoder,scaler),columns=feature_columns_postProcess)
     
 
     os.makedirs(args.processed_data, exist_ok=True)
