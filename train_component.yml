@@ -1,0 +1,16 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: train_model
+display_name: Train Model
+version: 2
+
+code: ./src
+command: python train.py --processed_data ${{inputs.processed_data}}
+
+inputs:
+  processed_data:
+    type: uri_folder
+    description: Processed data from preprocessing step
+
+environment: azureml:fraud-detection-env@latest

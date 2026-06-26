@@ -1,0 +1,21 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: preprocess_data
+display_name: Preprocess Data
+version: 2
+
+code: ./src
+command: python preprocess.py --raw_data ${{inputs.raw_data}} --processed_data ${{outputs.processed_data}}
+
+inputs:
+  raw_data:
+    type: uri_file
+    description: Raw input data file
+
+outputs:
+  processed_data:
+    type: uri_folder
+    description: Processed data output
+
+environment: azureml:fraud-detection-env@latest

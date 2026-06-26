@@ -1,17 +1,14 @@
 from azure.ai.ml import MLClient
-from azure.identity import DefaultAzureCredential
+from azure.identity import InteractiveBrowserCredential
 import pandas as pd
 import logging
 
 
 
-def az_connect(config)->MLClient:
-    """function to connect to azure workspaces 
-            config:json file
-    """
 
+def az_connect(config)->MLClient:
     ml_client=MLClient(
-                        DefaultAzureCredential(),
+                        InteractiveBrowserCredential(tenant_id="6d19977e-97cf-425f-b759-dffa37424bd1"),
                         subscription_id=config['subscription_id'],
                         resource_group_name=config['resource_group'],
                         workspace_name=config['workspace_name'])
@@ -25,7 +22,6 @@ def az_connect(config)->MLClient:
         raise
 
     return ml_client
-
 def load_train_data(path:str)->pd.DataFrame:
     """function to load trainning (tain,test)data from a csv in a azure boble storage
         df.columns=['step', 'type', 'amount', 'nameOrig', 'oldbalanceOrg', 'newbalanceOrig',

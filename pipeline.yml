@@ -4,37 +4,34 @@ type: pipeline
 experiment_name: fraud_detection
 compute: azureml:mouhibcompute
 
+
 inputs:
   raw_data:
     type: uri_file
-    path: azureml:fraudDetection@1
+    path: azureml://subscriptions/3c3b6d94-78ba-4830-b73c-a8e2b2835dae/resourcegroups/mlopsmouhib/workspaces/amlmouhib/datastores/workspaceblobstore/paths/UI/2026-06-15_120339_UTC/AIML Dataset v1.csv
 
 jobs:
   step_one:
     type: command
-    code: ./src
-    command: python preprocess.py
-    environment: azureml:fraud-detection-env@latest
-    inputs: 
-      data: ${{parent.inputs.raw_data}}
+    component: azureml:preprocess_data@latest
+    inputs:
+      raw_data: ${{parent.inputs.raw_data}}
     outputs:
       processed_data:
         type: uri_folder
+
   step_two:
-    depends_on: 
+    type: command
+    component: azureml:train_model@latest
+    depends_on:
       - step_one
-    type: command
-    code: ./src
-    command: python train.py
-    environment: azureml:fraud-detection-env@latest
     inputs:
-      data: ${{parent.jobs.step_one.outputs.processed_data}}
+      processed_data: ${{parent.jobs.step_one.outputs.processed_data}}
+
   step_three:
-    depends_on: 
-      - step_two
     type: command
-    code: ./src
-    command: python evaluate.py
-    environment: azureml:fraud-detection-env@latest
+    component: azureml:evaluate_model@latest
+    depends_on:
+      - step_two
     inputs:
-      data: ${{parent.jobs.step_one.outputs.processed_data}}
+      processed_data: ${{parent.jobs.step_one.outputs.processed_data}}
