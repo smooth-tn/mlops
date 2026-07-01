@@ -3,14 +3,19 @@ type: command
 
 name: train_model
 display_name: Train Model
-version: 8
+version: 11
 
 code: ./src
-command: python train.py --processed_data ${{inputs.processed_data}}
+command: python train.py --processed_data ${{inputs.processed_data}} --run_info_output ${{outputs.run_info_output}}
 
 inputs:
   processed_data:
     type: uri_folder
     description: Processed data from preprocessing step
+
+outputs:
+  run_info_output:
+    type: uri_folder
+    description: two trained models 
 
 environment: azureml:fraud-detection-env@latest

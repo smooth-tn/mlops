@@ -3,14 +3,16 @@ type: command
 
 name: evaluate_model
 display_name: Evaluate Model
-version: 11
+version: 15
 
 code: ./src
-command: python evaluate.py --processed_data ${{inputs.processed_data}}
+command: python evaluate.py --processed_data ${{inputs.processed_data}}  --run_info_input ${{inputs.run_info_input}}
 
 inputs:
   processed_data:
     type: uri_folder
     description: Processed data for evaluation
-
+  run_info_input:
+    type: uri_folder
+    description: models to evaluate
 environment: azureml:fraud-detection-env@latest

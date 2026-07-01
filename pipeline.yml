@@ -28,7 +28,10 @@ jobs:
       - step_one
     inputs:
       processed_data: ${{parent.jobs.step_one.outputs.processed_data}}
-
+    outputs:
+      run_info_output:
+        type: uri_folder
+  
   step_three:
     type: command
     component: azureml:evaluate_model@latest
@@ -36,3 +39,4 @@ jobs:
       - step_two
     inputs:
       processed_data: ${{parent.jobs.step_one.outputs.processed_data}}
+      run_info_input: ${{parent.jobs.step_two.outputs.run_info_output}}

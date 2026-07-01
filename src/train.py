@@ -1,5 +1,7 @@
 import mlflow
 import argparse
+import json
+import os
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
@@ -44,6 +46,7 @@ def train_forest(x_train,y_train)->RandomForestClassifier:
 def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--processed_data", type=str)
+    parser.add_argument("--run_info_output", type=str)
     return parser.parse_args()
 
 if __name__=="__main__":
@@ -79,12 +82,8 @@ if __name__=="__main__":
         })
         mlflow.sklearn.log_model(
             model_xgb,
-            artifact_path='model_xgb')
-        
-        mlflow.register_model(
-            model_uri=f"runs:/{xgb_run.info.run_id}/model_xgb",
-            name="fraud-detection-xgboost"
-        )
+            artifact_path='model')
+        run_id_xgb=xgb_run.info.run_id
 
     with mlflow.start_run(run_name='randomForest',nested=True) as rf_run:
         mlflow.log_metrics({
@@ -95,8 +94,9 @@ if __name__=="__main__":
             'fbeta_score':fbeta_score_forest
         })
 
-        mlflow.sklearn.log_model(model_forest,artifact_path='model_forest')
-        mlflow.register_model(
-            model_uri=f"runs:/{rf_run.info.run_id}/model_forest",
-            name="fraud-detection-randomForest"
-        )
+        mlflow.sklearn.log_model(model_forest,artifact_path='model')
+        run_id_rf = rf_run.info.run_id
+
+    os.makedirs(args.run_info_output, exist_ok=True)
+    with open(os.path.join(args.run_info_output, "run_info.json"), "w") as f:
+        json.dump({"xgb_run_id": run_id_xgb, "rf_run_id": run_id_rf}, f)
