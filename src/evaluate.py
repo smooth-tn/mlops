@@ -45,11 +45,17 @@ if __name__=="__main__":
     xgb_run_id = run_info["xgb_run_id"]
     rf_run_id  = run_info["rf_run_id"]
 
-    model_xgb = mlflow.sklearn.load_model(f"runs:/{xgb_run_id}/model")
-    model_forest  = mlflow.sklearn.load_model(f"runs:/{rf_run_id}/model")
+    xgb_run=mlflow.get_run(xgb_run_id)
+    forest_run=mlflow.get_run(rf_run_id)
 
-    metrics_xgb=evaluate_model(model_xgb, x_test, y_test)
-    metrics_forest=evaluate_model(model_forest, x_test, y_test,threshold=0.1)
+    model_xgb = mlflow.sklearn.load_model(f"runs:/{xgb_run_id}/model")
+    model_forest=mlflow.sklearn.load_model(f"runs:/{rf_run_id}/model")
+
+    xgb_parms=xgb_run.data.params
+    fr_params=forest_run.data.params
+
+    metrics_xgb=evaluate_model(model_xgb, x_test, y_test,float(xgb_parms['threshold']))
+    metrics_forest=evaluate_model(model_forest, x_test, y_test,float(fr_params['threshold']))
 
     passed_xgb=passes_threshold(metrics_xgb)
     passed_forest=passes_threshold(metrics_forest)
@@ -63,7 +69,7 @@ if __name__=="__main__":
     if passed_forest:
         candidates['randomForest']=(metrics_forest, model_forest, "model")
 
-    champion_name=max(candidates, key=lambda k: candidates[k][0]['recall'])
+    champion_name=max(candidates, key=lambda k: candidates[k][0]['fbeta_score'])
     champion_metrics, champion_model, champion_artifact = candidates[champion_name]
 
 
@@ -79,7 +85,7 @@ if __name__=="__main__":
         model_uri=f"runs:/{champ_run_id}/{champion_artifact}",
         name="fraud-detection-champion"
     )
-    version_champ=2
+    version_champ=result_champ.version
     client.transition_model_version_stage(
         name="fraud-detection-champion",
         version=version_champ,

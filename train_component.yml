@@ -3,19 +3,58 @@ type: command
 
 name: train_model
 display_name: Train Model
-version: 11
+version: 21
 
 code: ./src
-command: python train.py --processed_data ${{inputs.processed_data}} --run_info_output ${{outputs.run_info_output}}
+command: >-
+  python train.py
+  --processed_data ${{inputs.processed_data}}
+  --model_type ${{inputs.model_type}}
+  --xgb_max_depth ${{inputs.xgb_max_depth}}
+  --xgb_learning_rate ${{inputs.xgb_learning_rate}}
+  --xgb_n_estimators ${{inputs.xgb_n_estimators}}
+  --xgb_scale_pos_weight ${{inputs.xgb_scale_pos_weight}}
+  --rf_n_estimators ${{inputs.rf_n_estimators}}
+  --rf_pos_weight ${{inputs.rf_pos_weight}}
+  --rf_threshold ${{inputs.rf_threshold}}
+  --run_info_output ${{outputs.run_info_output}}
 
 inputs:
   processed_data:
     type: uri_folder
     description: Processed data from preprocessing step
+  model_type:
+    type: string
+    default: "both"
+    description: Which model to train — xgb, forest, or both
+  xgb_max_depth:
+    type: integer
+    default: 9
+  xgb_learning_rate:
+    type: number
+    default: 0.40829877019115457
+  xgb_n_estimators:
+    type: integer
+    default: 150
+  xgb_scale_pos_weight:
+    type: number
+    default: 75
+  xgb_threshold:
+    type: number
+    default: 0.36146844823902946
+  rf_n_estimators:
+    type: integer
+    default: 300
+  rf_pos_weight:
+    type: number
+    default: 25
+  rf_threshold:
+    type: number
+    default: 0.15878201460012448
 
 outputs:
   run_info_output:
     type: uri_folder
-    description: two trained models 
+    description: two trained models
 
 environment: azureml:fraud-detection-env@latest
