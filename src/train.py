@@ -2,6 +2,7 @@ import mlflow
 import argparse
 import json
 import os
+import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
@@ -73,6 +74,11 @@ if __name__=="__main__":
     y_train = pd.read_csv(f"{args.processed_data}/y_train.csv").squeeze()
     x_cv=pd.read_csv(f"{args.processed_data}/x_cv.csv")
     y_cv = pd.read_csv(f"{args.processed_data}/y_cv.csv").squeeze()
+    encoder=joblib.load(f"{args.processed_data}/encoder.pkl")
+    scaler=joblib.load(f"{args.processed_data}/scaler.pkl")
+
+    joblib.dump(encoder, "encoder.pkl")
+    joblib.dump(scaler, "scaler.pkl")
 
     nested=args.model_type=="both"
     if nested:
@@ -114,6 +120,8 @@ if __name__=="__main__":
             with mlflow.start_run(run_name='xgboost',nested=nested) as xgb_run:
                 mlflow.log_metrics(metrics_xgb)
                 mlflow.log_params(params_xgb)
+                mlflow.log_artifact("encoder.pkl", artifact_path="model")
+                mlflow.log_artifact("scaler.pkl", artifact_path="model")
                 mlflow.sklearn.log_model(
                     model_xgb,
                     artifact_path='model')
@@ -121,7 +129,9 @@ if __name__=="__main__":
         else:
             mlflow.log_metrics(metrics_xgb)
             mlflow.log_params(params_xgb)
-            mlflow.sklearn.log_model(model_xgb, artifact_path='model')
+            mlflow.log_artifact("encoder.pkl", artifact_path="model")
+            mlflow.log_artifact("scaler.pkl", artifact_path="model")
+            mlflow.sklearn.log_model(model_xgb, artifact_path='model',)
             active = mlflow.active_run()
             run_ids["xgb_run_id"] = active.info.run_id if active else None
 
@@ -156,11 +166,15 @@ if __name__=="__main__":
             with mlflow.start_run(run_name='randomForest',nested=nested) as rf_run:
                 mlflow.log_metrics(metrics_rf)
                 mlflow.log_params(params_rf)
+                mlflow.log_artifact("encoder.pkl", artifact_path="model")
+                mlflow.log_artifact("scaler.pkl", artifact_path="model")
                 mlflow.sklearn.log_model(model_forest,artifact_path='model')
                 run_ids["run_id_rf"] = rf_run.info.run_id
         else:
             mlflow.log_metrics(metrics_rf)
             mlflow.log_params(params_rf)
+            mlflow.log_artifact("encoder.pkl", artifact_path="model")
+            mlflow.log_artifact("scaler.pkl", artifact_path="model")
             mlflow.sklearn.log_model(model_forest,artifact_path='model')
             active = mlflow.active_run()
             run_ids["run_id_rf"] = active.info.run_id if active else None

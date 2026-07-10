@@ -3,7 +3,7 @@ type: command
 
 name: train_model
 display_name: Train Model
-version: 21
+version: 23
 
 code: ./src
 command: >-
@@ -14,6 +14,7 @@ command: >-
   --xgb_learning_rate ${{inputs.xgb_learning_rate}}
   --xgb_n_estimators ${{inputs.xgb_n_estimators}}
   --xgb_scale_pos_weight ${{inputs.xgb_scale_pos_weight}}
+  --xgb_threshold ${{inputs.xgb_threshold}}
   --rf_n_estimators ${{inputs.rf_n_estimators}}
   --rf_pos_weight ${{inputs.rf_pos_weight}}
   --rf_threshold ${{inputs.rf_threshold}}

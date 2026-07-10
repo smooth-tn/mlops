@@ -1,0 +1,61 @@
+name: Submit AML Pipeline and deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'pipeline.yml'
+      - 'evaluate_component.yml'
+      - 'train_component.yml'
+      - 'preprocess_component.yml'
+      - 'challenger.yml'
+      - 'champion.yml'
+      - 'endpoint.yml'
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  submit-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - run: az extension add -n ml -y
+      - name: submit pipeline job
+        run: |
+          az ml job create --file pipeline.yml \
+            --resource-group mlopsmouhib \
+            --workspace-name amlmouhib
+
+  deploy:
+    needs: submit-pipeline
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - run: az extension add -n ml -y
+
+      - name: Create endpoint if not exists
+        run: |
+          az ml online-endpoint show --name fraud-detection-endpoint \
+            --resource-group mlopsmouhib --workspace-name amlmouhib \
+          || az ml online-endpoint create --file endpoint.yml \
+            --resource-group mlopsmouhib --workspace-name amlmouhib
+
+      - name: deploy champion
+        run: az ml online-deployment create --file champion.yml --resource-group mlopsmouhib --workspace-name amlmouhib --all-traffic
+      - name: deploy challenger
+        run: az ml online-deployment create --file challenger.yml --resource-group mlopsmouhib --workspace-name amlmouhib
+      - name: set traffic split
+        run: az ml online-endpoint update --name fraud-detection-endpoint --resource-group mlopsmouhib --workspace-name amlmouhib --traffic "champion_model=80 challenger_model=20"

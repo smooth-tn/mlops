@@ -24,16 +24,12 @@ EXAMPLE_INPUT = {
 def init():
     global model, threshold,encoder,scaler
 
-   
-    model_name = os.getenv("MODEL_NAME", "fraud-detection-champion")
-    threshold = 0.1 if model_name == "fraud-detection-challenger" else 0.5
+    threshold = float(os.getenv("threshold",'0.5'))
 
     model_dir=os.getenv("AZUREML_MODEL_DIR")
-    encoder = joblib.load(os.path.join(model_dir, "artifacts", "encoder.pkl"))
-    scaler  = joblib.load(os.path.join(model_dir, "artifacts", "scaler.pkl"))
-    artifact_name = "model_xgboost" if model_name == "fraud-detection-champion" else "model_randomForest"
-    model = mlflow.sklearn.load_model(os.path.join(model_dir, artifact_name))
-
+    encoder=joblib.load(os.path.join(model_dir, "model", "encoder.pkl"))
+    scaler=joblib.load(os.path.join(model_dir, "model", "scaler.pkl"))
+    model=mlflow.sklearn.load_model(os.path.join(model_dir, "model"))
 def run(raw_data):
     try:
         data = json.loads(raw_data)
