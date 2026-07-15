@@ -11,5 +11,5 @@ code_configuration:
 environment_variables:
   threshold: 0.36146844823902946
 
-instance_type: Standard_F4s_v2
+instance_type: Standard_F2s_v2
 instance_count: 1
