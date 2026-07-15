@@ -1,6 +1,6 @@
 $schema: "https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json"
 
-name: challenger-model
+name: challenger-endpoint
 endpoint_name:  fraud-detection-endpoint
 model: azureml:fraud-detection-challenger@latest
 environment: azureml:deploiment_env@latest
