@@ -1,14 +1,14 @@
 $schema: "https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json"
 
 name: champion_model
-endpoint_name: fraud-detection-endpoint
+endpoint_name:  fraud-detection-endpoint
 model: azureml:fraud-detection-champion@latest
 environment: azureml:deploiment_env@latest
 code_configuration:
   code: .
   scoring_script: src/score.py
 environment_variables:
-  threshold: "0.15878201460012448"
+  threshold: 0.15878201460012448
 
 instance_type: Standard_DS3_v2
 instance_count: 1
