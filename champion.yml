@@ -1,6 +1,6 @@
 $schema: "https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json"
 
-name: champion_model
+name: champion-model
 endpoint_name:  fraud-detection-endpoint
 model: azureml:fraud-detection-champion@latest
 environment: azureml:deploiment_env@latest
