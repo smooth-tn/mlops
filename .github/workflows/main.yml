@@ -12,7 +12,7 @@ on:
       - 'challenger.yml'
       - 'champion.yml'
       - 'endpoint.yml'
-      - 'main.yml'
+      - '.github\workflows\main.yml'
 permissions:
   id-token: write
   contents: read
