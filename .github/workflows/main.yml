@@ -56,14 +56,14 @@ jobs:
 
       - name: deploy champion
         run: |
-          az ml online-deployment show --name champion_model \
+          az ml online-deployment show --name champion-endpoint \
             --endpoint-name fraud-detection-endpoint \
             --resource-group mlopsmouhib --workspace-name amlmouhib \
           && az ml online-deployment update --file champion.yml --endpoint-name fraud-detection-endpoint --resource-group mlopsmouhib --workspace-name amlmouhib --all-traffic \
           || az ml online-deployment create --file champion.yml --resource-group mlopsmouhib --workspace-name amlmouhib --all-traffic
       - name: deploy challenger
         run: |
-          az ml online-deployment show --name challenger_model \
+          az ml online-deployment show --name challenger-endpoint \
             --endpoint-name fraud-detection-endpoint \
             --resource-group mlopsmouhib --workspace-name amlmouhib \
           && az ml online-deployment update --file challenger.yml --endpoint-name fraud-detection-endpoint --resource-group mlopsmouhib --workspace-name amlmouhib \
