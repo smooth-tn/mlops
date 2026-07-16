@@ -60,7 +60,7 @@ jobs:
             --endpoint-name fraud-detection-endpoint \
             --resource-group mlopsmouhib --workspace-name amlmouhib \
           && az ml online-deployment update --file champion.yml --endpoint-name fraud-detection-endpoint --resource-group mlopsmouhib --workspace-name amlmouhib --all-traffic \
-          || az ml online-deployment create --file champion.yml --resource-group mlopsmouhib --workspace-name amlmouhib --all-traffic
+          || az ml online-deployment create --file champion.yml --resource-group mlopsmouhib --workspace-name amlmouhib 
       - name: deploy challenger
         run: |
           az ml online-deployment show --name challenger-endpoint \
@@ -69,4 +69,4 @@ jobs:
           && az ml online-deployment update --file challenger.yml --endpoint-name fraud-detection-endpoint --resource-group mlopsmouhib --workspace-name amlmouhib \
           || az ml online-deployment create --file challenger.yml --resource-group mlopsmouhib --workspace-name amlmouhib
       - name: set traffic split
-        run: az ml online-endpoint update --name fraud-detection-endpoint --resource-group mlopsmouhib --workspace-name amlmouhib --traffic "champion_model=80 challenger_model=20"
+        run: az ml online-endpoint update --name fraud-detection-endpoint --resource-group mlopsmouhib --workspace-name amlmouhib --traffic "champion-endpoint=80 challenger-endpoint=20"
