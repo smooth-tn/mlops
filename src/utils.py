@@ -23,6 +23,6 @@ def az_connect(config)->MLClient:
 
     return ml_client
 
-#test 6
+#test 7
 
 
