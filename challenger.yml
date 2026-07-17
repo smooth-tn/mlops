@@ -7,9 +7,14 @@ environment: azureml:deploiment_env@latest
 code_configuration:
   code: .
   scoring_script: src/score.py
-
+  
 environment_variables:
-  threshold: 0.36146844823902946
-
+  threshold: 0.
+data_collector:
+  collections:
+    model_inputs:
+      enabled: true
+    model_outputs:
+      enabled: true 
 instance_type: Standard_F2s_v2
 instance_count: 1

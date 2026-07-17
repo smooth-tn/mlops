@@ -5,6 +5,7 @@ import joblib
 import pandas as pd
 import logging
 from preprocess import preprocess
+from azureml.ai.monitoring import Collector
 
 logger = logging.getLogger(__name__)
 feature_columns=['step', 'type', 'amount', 'oldbalanceOrg', 'newbalanceOrig','oldbalanceDest', 'newbalanceDest']
@@ -19,6 +20,9 @@ EXAMPLE_INPUT = {
         "newbalanceDest": 1000.0
     }]
 }
+
+inputs_collector = Collector(name="model_inputs")
+outputs_collector = Collector(name="model_outputs")
 
 
 def init():
@@ -57,10 +61,17 @@ def run(raw_data):
                 "required_columns": feature_columns,
                 "example": EXAMPLE_INPUT
             }
+        
+
         processed_df=preprocess(df,encoder,scaler)
         proba = model.predict_proba(processed_df)[:,1]
         prediction = (proba >= threshold).astype(int)
-
+        try:
+            context = inputs_collector.collect(df)
+            output_df = pd.DataFrame({"probability": proba})
+            outputs_collector.collect(output_df, context)
+        except Exception as e:
+            logger.warning(f"Data collection failed: {e}")
         return {
             "predictions": prediction.tolist(),
             "probabilities": proba.tolist()
