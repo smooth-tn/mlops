@@ -9,7 +9,6 @@ compute: azureml:mouhibcompute
 inputs:
   raw_data:
     type: uri_file
-    path: ${{ secrets.DATA_PATH }}
 
 jobs:
   step_one:
