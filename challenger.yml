@@ -9,7 +9,7 @@ code_configuration:
   scoring_script: src/score.py
   
 environment_variables:
-  threshold: 0.
+  threshold: 0.36146844823902946
 data_collector:
   collections:
     model_inputs:

@@ -81,8 +81,8 @@ def split_data(df:pd.DataFrame,train_size=0.6,cv_size=0.5,random_state=42):
     df=df.copy()
     target=df.isFraud
     df.drop(columns=['isFraud'],inplace=True)
-    x_train,x_temp,y_train,y_temp=train_test_split(df,target,train_size=train_size,random_state=random_state)
-    x_cv,x_test,y_cv,y_test=train_test_split(x_temp,y_temp,train_size=cv_size,random_state=random_state)
+    x_train,x_temp,y_train,y_temp=train_test_split(df,target,train_size=train_size,random_state=random_state,stratify=target)
+    x_cv,x_test,y_cv,y_test=train_test_split(x_temp,y_temp,train_size=cv_size,random_state=random_state,stratify=y_temp)
     
     return x_train,y_train,x_cv,y_cv,x_test,y_test
 

@@ -9,7 +9,7 @@ compute: azureml:mouhibcompute
 inputs:
   raw_data:
     type: uri_file
-    path: azureml://subscriptions/3c3b6d94-78ba-4830-b73c-a8e2b2835dae/resourcegroups/mlopsmouhib/workspaces/amlmouhib/datastores/workspaceblobstore/paths/UI/2026-06-26_154732_UTC/AIML_Dataset_v1.csv
+    path: ${{ secrets.DATA_PATH }}
 
 jobs:
   step_one:
